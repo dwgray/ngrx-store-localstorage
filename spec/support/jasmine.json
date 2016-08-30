@@ -1,0 +1,8 @@
+{
+  "spec_dir": "tmp",
+  "spec_files": [
+    "*.js"
+  ],
+  "helpers": [
+  ]
+}
