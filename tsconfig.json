@@ -7,10 +7,10 @@
 		"moduleResolution": "node",
 		"outDir": "dist",
 		"declaration": true,
+    "lib": ["es2015", "dom"],
     "sourceMap": true
 	},
 	"files": [
-    "typings/main.d.ts",
 		"src/index.ts"
 	],
   "angularCompilerOptions": {
