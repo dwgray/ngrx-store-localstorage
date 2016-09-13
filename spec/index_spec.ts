@@ -1,5 +1,6 @@
 declare var beforeEachProviders, it, describe, expect, inject;
-
+require('es6-shim');
+require('reflect-metadata');
 import {syncStateUpdate,rehydrateApplicationState,dateReviver} from '../src/index';
 
 // Very simple classes to test serialization options.  They cover string, number, date, and nested classes
