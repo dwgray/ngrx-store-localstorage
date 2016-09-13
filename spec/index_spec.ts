@@ -1,4 +1,5 @@
 declare var beforeEachProviders, it, describe, expect, inject;
+
 import {syncStateUpdate,rehydrateApplicationState,dateReviver} from '../src/index';
 
 // Very simple classes to test serialization options.  They cover string, number, date, and nested classes
@@ -224,7 +225,7 @@ describe('ngrxLocalStorage', () => {
         syncStateUpdate(initialState,keys,s);
         
         let finalState : any = rehydrateApplicationState(keys, s);
-        expect(JSON.stringify(finalState)).toEqual(JSON.stringify(initialState));
+        expect(JSON.stringify(finalState)).toEqual(initialStateJson);
         expect(finalState.state instanceof TypeA).toBeTruthy();
         expect(finalState.state.aclass instanceof TypeB).toBeTruthy();
     });

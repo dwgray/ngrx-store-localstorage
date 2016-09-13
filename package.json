@@ -32,7 +32,9 @@
   },
   "homepage": "https://github.com/btroncone/ngrx-store-localstorage#readme",
   "peerDependencies": {
+    "@ngrx/core": "^1.0.0",
     "rxjs": "^5.0.0-beta.6",
+    "@angular/core": "^2.0.0-rc.5",
     "@ngrx/store": "^2.0.0"
   },
   "devDependencies": {
