@@ -2,7 +2,7 @@ const INIT_ACTION = "@ngrx/store/init";
 const detectDate = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/;
 
 //correctly parse dates from local storage
-const dateReviver = (key : string, value : any) => {
+export const dateReviver = (key : string, value : any) => {
     if (typeof value === 'string' && (detectDate.test(value))) {
         return new Date(value);
     }
@@ -27,7 +27,7 @@ const validateStateKeys = (keys: any[]) => {
     });
 };
 
-const rehydrateApplicationState = (keys: string[]) => {
+export const rehydrateApplicationState = (keys: any[], storage : Storage) => {
     return keys.reduce((acc, curr) => {
         let key = curr;
         let reviver = dateReviver;
@@ -51,7 +51,7 @@ const rehydrateApplicationState = (keys: string[]) => {
           }
         }
 
-        let stateSlice = localStorage.getItem(key);
+        let stateSlice = storage.getItem(key);
         if(stateSlice){
             let raw = JSON.parse(stateSlice,reviver);
             return Object.assign({}, acc, { [key]: deserialize ? deserialize(raw) : raw});
@@ -60,7 +60,7 @@ const rehydrateApplicationState = (keys: string[]) => {
     }, {});
 };
 
-const syncStateUpdate = (state : any, keys : string[]) => {
+export const syncStateUpdate = (state : any, keys : any[], storage : Storage) => {
     keys.forEach(key => {
 
         let stateSlice = state[key];
@@ -76,19 +76,22 @@ const syncStateUpdate = (state : any, keys : string[]) => {
                 if (key[name].serialize) {
                     stateSlice = key[name].serialize(stateSlice);
                 }
-                
-                // If either the direct value is an array or if there is a filter member
-                //  on the field object, only save off the fields specified by the filter 
-                let filter = key[name];
-                if (key[name].reduce) {
-                    filter = key[name];
-                }
-                if (filter)
-                {
-                    stateSlice = filter.reduce((memo, attr) => {
-                        memo[attr] = stateSlice[attr];
-                        return memo;
-                    }, {});
+                // Else filter on fields if an array has been provided
+                else {
+                    let filter = undefined;
+                    if (key[name].reduce) {
+                        filter = key[name];
+                    }
+                    else if (key[name].filter) {
+                        filter = key[name].filter;
+                    }
+                    if (filter) {
+                        stateSlice = filter.reduce((memo, attr) => {
+                            memo[attr] = stateSlice[attr];
+                            return memo;
+                        }, {});
+
+                    }
                 }
 
                 // replacer and space arguments to pass to JSON.stringify
@@ -102,7 +105,7 @@ const syncStateUpdate = (state : any, keys : string[]) => {
 
         if (typeof(stateSlice) !== 'undefined') {
             try{
-                localStorage.setItem(key, typeof stateSlice == 'string' ? stateSlice : JSON.stringify(stateSlice,replacer));
+                storage.setItem(key, typeof stateSlice == 'string' ? stateSlice : JSON.stringify(stateSlice,replacer,space));
             } catch(e){
                 console.warn('Unable to save state to localStorage:', e);
             }
@@ -110,9 +113,9 @@ const syncStateUpdate = (state : any, keys : string[]) => {
     });
 };
 
-export const localStorageSync = (keys : any[], rehydrate : boolean = false) => (reducer : any) => {
+export const localStorageSync = (keys : any[], rehydrate : boolean = false, storage: Storage = localStorage) => (reducer : any) => {
     const stateKeys = validateStateKeys(keys);
-    const rehydratedState = rehydrate ? rehydrateApplicationState(stateKeys) : undefined;
+    const rehydratedState = rehydrate ? rehydrateApplicationState(stateKeys, storage) : undefined;
 
     return function(state = rehydratedState, action : any){
         /*
@@ -123,7 +126,7 @@ export const localStorageSync = (keys : any[], rehydrate : boolean = false) => (
             state = Object.assign({}, state, rehydratedState);
         }
         const nextState = reducer(state, action);
-        syncStateUpdate(nextState, stateKeys);
+        syncStateUpdate(nextState, stateKeys, storage);
         return nextState;
     };
 };
