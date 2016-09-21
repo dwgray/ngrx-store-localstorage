@@ -12,7 +12,6 @@
 		]
 	},
 	"files": [
-    	"helpers/test-helper.ts",
     	"index_spec.ts"
 	]
 }
